@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+	<th:block th:include="include :: header('新增管辖域')" />
+</head>
+<body class="white-bg">
+	<div class="row">
+		<div class="col-sm-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-content">
+					<form class="form-horizontal m-t" id="form-group-add">
+						<div class="form-group">
+							<label class="col-sm-3 control-label">所属管辖域：</label>
+							<div class="col-sm-8">
+								<div class="input-group">
+									<input type="hidden" class="form-control" name="parentId" id="parentId">
+									<input type="text" class="form-control" name="parent" id="parent">
+									<div class="input-group-btn">
+										<button type="button" class="btn btn-white dropdown-toggle" data-toggle="dropdown">
+											<span class="caret"></span>
+										</button>
+										<ul class="dropdown-menu dropdown-menu-right" role="menu">
+										</ul>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">管辖域名称：</label>
+							<div class="col-sm-8">
+								<input id="groupName" name="groupName" class="form-control valid" type="text" aria-required="true" aria-invalid="false" required>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<div class="col-sm-8">
+								<label class="col-sm-3 control-label"></label>
+								<a class="btn btn-success" onclick="selectPlat()">
+									<i class="fa fa-plus"></i> 选择地点
+								</a>
+							</div>
+
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">经度：</label>
+							<div class="col-sm-8">
+								<input id="longitude" name="longitude" class="form-control" type="text" required>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">纬度：</label>
+							<div class="col-sm-8">
+								<input id="latitude" name="latitude" class="form-control" type="text" required>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">国家：</label>
+							<div class="col-sm-8">
+								<input id="country" name="country" class="form-control" type="text" required>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">省份：</label>
+							<div class="col-sm-8">
+								<input id="province" name="province" class="form-control" type="text" required>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">市：</label>
+							<div class="col-sm-8">
+								<input id="city" name="city" class="form-control" type="text" required>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">县/区：</label>
+							<div class="col-sm-8">
+								<input id="county" name="county" class="form-control" type="text" required>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">详细地址：</label>
+							<div class="col-sm-8">
+								<input id="locationDetail" name="locationDetail" class="form-control" type="text" required>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+    <div th:include="include::footer"></div>
+<script>
+		$(function() {
+			$("#parent").bsSuggest({
+				url: "/module/group/jsonList",
+				effectiveFields: ["groupName", "province", "city"], //有效显示于列表中的字段，非有效字段都会过滤，默认全部，对自定义getData方法无效
+				idField: "id",		//每组数据的哪个字段作为 data-id，优先级高于 indexId 设置（推荐）
+				keyField: "groupName",		//每组数据的第几个数据，作为input输入框的内容
+				showBtn: false,                  //是否显示下拉按钮
+				allowNoKeyword: true,           //是否允许无关键字时请求数据
+				multiWord: false,               //以分隔符号分割的多关键字支持(开了这个警告色功能可能失效)
+				separator: ",",                 //多关键字支持时的分隔符，默认为半角逗号
+				inputWarnColor: "rgba(255,0,0,.1)", //输入框内容不是下拉列表选择时的警告色
+				showHeader: true , //显示 header
+			}).on('onDataRequestSuccess', function (e, result) {
+				console.log('onDataRequestSuccess: ', result);
+			}).on('onSetSelectValue', function (e, keyword) {
+				console.log('onSetSelectValue: ', keyword.id);
+				$("#parentId").val(keyword.id);
+				});
+			}).on('onUnsetSelectValue', function (e) {
+		});
+
+		var prefix = ctx + "module/group"
+		$("#form-group-add").validate({
+			rules:{
+				xxxx:{
+					required:true,
+				},
+			},
+			focusCleanup: true
+		});
+
+		function submitHandler() {
+	        if ($.validate.form()) {
+	            $.operate.save(prefix + "/add", $('#form-group-add').serialize());
+	        }
+	    }
+
+		function selectPlat() {
+			var url = ctx + "module/plat/selectPlat" ;
+			var options = {
+				title: '选择地址位置',
+				//width: "380",
+				url: url,
+				callBack: doSubmit
+			};
+			$.modal.openOptions(options);
+		}
+
+		function doSubmit(index, layero) {
+			var body = layer.getChildFrame('body', index);
+			$("#longitude").val(body.find('#lng').val());
+			$("#latitude").val(body.find('#lat').val());
+			$("#country").val('中国');
+			$("#province").val(body.find('#province').val());
+			$("#city").val(body.find('#city').val());
+			$("#county").val(body.find('#district').val());
+			$("#locationDetail").val(body.find('#province').val()+body.find('#city').val()+body.find('#district').val()
+					+body.find('#street').val()+body.find('#streetNumber').val());
+			layer.close(index);
+		}
+	</script>
+
+</body>
+</html>

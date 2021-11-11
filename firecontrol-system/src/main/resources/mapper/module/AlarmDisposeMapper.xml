@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.firecontrol.module.mapper.AlarmDisposeMapper">
+
+    <resultMap type="AlarmDispose" id="AlarmDisposeResult">
+        <result property="id"    column="id"    />
+        <result property="dispose"    column="dispose"    />
+        <result property="imei"    column="imei"    />
+        <result property="produceTime"    column="produce_time"    />
+        <result property="disposeTime"    column="dispose_time"    />
+        <result property="status"    column="status"    />
+        <result property="batteryLevel"    column="battery_level"    />
+        <result property="alarmLevel"    column="alarm_level"    />
+        <result property="alarmStatus"    column="alarm_status"    />
+
+        <association property="alarmType" column="id" javaType="AlarmType" resultMap="AlarmTypeResult" />
+    </resultMap>
+
+    <resultMap type="AlarmType" id="AlarmTypeResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+    </resultMap>
+
+    <sql id="selectAlarmDisposeVo">
+        select ad.id, ad.dispose, ad.imei, ad.produce_time, ad.dispose_time, ad.status, ad.battery_level, ad.alarm_level, ad.alarm_status from sys_alarm_dispose ad
+    </sql>
+
+    <select id="selectAlarmDisposeList" parameterType="AlarmDispose" resultMap="AlarmDisposeResult">
+        <include refid="selectAlarmDisposeVo"/>
+        <where>
+            <if test="id != null "> and id = #{id}</if>
+            <if test="dispose != null  and dispose != '' "> and dispose = #{dispose}</if>
+            <if test="imei != null  and imei != '' "> and imei = #{imei}</if>
+            <if test="produceTime != null "> and produce_time = #{produceTime}</if>
+            <if test="disposeTime != null "> and dispose_time = #{disposeTime}</if>
+            <if test="status != null  and status != '' "> and status = #{status}</if>
+            <if test="batteryLevel != null "> and battery_level = #{batteryLevel}</if>
+            <if test="alarmLevel != null "> and alarm_level = #{alarmLevel}</if>
+            <if test="alarmStatus != null  and alarmStatus != '' "> and alarm_status = #{alarmStatus}</if>
+        </where>
+    </select>
+
+    <select id="alarmByEachDay" resultType="Integer">
+        select count(*)
+        from sys_alarm_dispose ad left join sys_equipment e on ad.imei = e.imei
+        where ad.produce_time like concat('%', #{day}, '%')
+        and e.dept_id = #{deptId}
+    </select>
+
+    <select id="selectAlarmDisposeById" parameterType="Long" resultMap="AlarmDisposeResult">
+        <include refid="selectAlarmDisposeVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectAlarmDisposeListByImei" parameterType="String" resultMap="AlarmDisposeResult">
+        select ad.id, ad.dispose, ad.imei, ad.produce_time, ad.dispose_time, ad.status, ad.battery_level, ad.alarm_level, ad.alarm_status,
+        alt.id, alt.name
+        from sys_alarm_dispose ad
+        left join sys_alarm_type alt on alt.id = ad.alarm_status
+        <where>
+            and ad.imei = #{imei}
+        </where>
+    </select>
+
+    <insert id="insertAlarmDispose" parameterType="AlarmDispose" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_alarm_dispose
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="dispose != null  and dispose != ''  ">dispose,</if>
+            <if test="imei != null  and imei != ''  ">imei,</if>
+            <if test="produceTime != null  ">produce_time,</if>
+            <if test="disposeTime != null  ">dispose_time,</if>
+            <if test="status != null  and status != ''  ">status,</if>
+            <if test="batteryLevel != null  ">battery_level,</if>
+            <if test="alarmLevel != null  ">alarm_level,</if>
+            <if test="alarmStatus != null  and alarmStatus != ''  ">alarm_status,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="dispose != null  and dispose != ''  ">#{dispose},</if>
+            <if test="imei != null  and imei != ''  ">#{imei},</if>
+            <if test="produceTime != null  ">#{produceTime},</if>
+            <if test="disposeTime != null  ">#{disposeTime},</if>
+            <if test="status != null  and status != ''  ">#{status},</if>
+            <if test="batteryLevel != null  ">#{batteryLevel},</if>
+            <if test="alarmLevel != null  ">#{alarmLevel},</if>
+            <if test="alarmStatus != null  and alarmStatus != ''  ">#{alarmStatus},</if>
+        </trim>
+    </insert>
+
+    <update id="updateAlarmDispose" parameterType="AlarmDispose">
+        update sys_alarm_dispose
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="dispose != null  and dispose != ''  ">dispose = #{dispose},</if>
+            <if test="imei != null  and imei != ''  ">imei = #{imei},</if>
+            <if test="produceTime != null  ">produce_time = #{produceTime},</if>
+            <if test="disposeTime != null  ">dispose_time = #{disposeTime},</if>
+            <if test="status != null  and status != ''  ">status = #{status},</if>
+            <if test="batteryLevel != null  ">battery_level = #{batteryLevel},</if>
+            <if test="alarmLevel != null  ">alarm_level = #{alarmLevel},</if>
+            <if test="alarmStatus != null  and alarmStatus != ''  ">alarm_status = #{alarmStatus},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="updateAlarmDisposeWx" parameterType="Map">
+        update sys_alarm_dispose
+        SET
+        <if test="dispose != null and dispose != '' ">dispose = #{dispose},</if>
+        <if test="status != null and status != '' ">status = #{status},</if>
+        <if test="disposeTime != null">dispose_time = #{disposeTime}</if>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteAlarmDisposeById" parameterType="Long">
+        delete from sys_alarm_dispose where id = #{id}
+    </delete>
+
+    <delete id="deleteAlarmDisposeByIds" parameterType="String">
+        delete from sys_alarm_dispose where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="queryAlarmDisposeListByImeis" resultMap="AlarmDisposeResultType">
+        select ad.id, ad.dispose, ad.imei, ad.produce_time, ad.dispose_time, ad.status, ad.battery_level,
+               ad.alarm_level, ad.alarm_status
+        from sys_alarm_dispose ad
+        where status = #{status} and imei in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <resultMap type="AlarmDispose" id="AlarmDisposeResultType">
+        <result property="id"    column="id"    />
+        <result property="dispose"    column="dispose"    />
+        <result property="imei"    column="imei"    />
+        <result property="produceTime"    column="produce_time"    />
+        <result property="disposeTime"    column="dispose_time"    />
+        <result property="status"    column="status"    />
+        <result property="batteryLevel"    column="battery_level"    />
+        <result property="alarmLevel"    column="alarm_level"    />
+        <result property="alarmStatus"    column="alarm_status"    />
+    </resultMap>
+
+<!--查询未处理的警报供前端页面展示-->
+    <select id="selectNotResolveWarn" resultMap="AlarmDisposeResultType">
+        select sad.id,
+       dispose,
+       si.install_name AS imei,
+       produce_time,
+       dispose_time,
+       si.install_location AS status,
+       battery_level,
+       alarm_level,
+       alarm_status
+from sys_install si
+       inner join sys_alarm_dispose sad on sad.imei = si.imei
+where sad.status = '0'
+    </select>
+
+</mapper>

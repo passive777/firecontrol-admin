@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+	<th:block th:include="include :: header('新增设备安装')" />
+</head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-install-add">
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">管辖域号：</label>
+				<div class="col-sm-8">
+					<input id="groupId" name="groupId" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">设备号：</label>
+				<div class="col-sm-8">
+					<input id="equipmentId" name="equipmentId" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">安装点名称：</label>
+				<div class="col-sm-8">
+					<input id="installName" name="installName" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">安装位置：</label>
+				<div class="col-sm-8">
+					<input id="installLocation" name="installLocation" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">安装时间：</label>
+				<div class="col-sm-8">
+					<div class="input-group date">
+						<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+						<input type="text" id="installTime" placeholder="" name="installTime" class="form-control valid" value="2018-04-20">
+					</div>
+
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">状态：</label>
+				<div class="col-sm-8">
+					<input id="status" name="status" class="form-control" type="text">
+				</div>
+			</div>
+		</form>
+	</div>
+    <div th:include="include::footer"></div>
+	<link href="/ajax/libs/datapicker/bootstrap-datetimepicker.min.css" rel="stylesheet"/>
+	<script src="/ajax/libs//datapicker/bootstrap-datetimepicker.min.js"></script>
+	<script>
+		$(".input-group.date").datetimepicker({
+			format: "yyyy-mm-dd hh:ii",
+			todayBtn : true,
+			minView: "0",
+			autoclose: true
+		});
+
+	</script>
+
+	<script type="text/javascript">
+		var prefix = ctx + "module/install"
+		$("#form-install-add").validate({
+			rules:{
+				xxxx:{
+					required:true,
+				},
+			},
+			focusCleanup: true
+		});
+		
+		function submitHandler() {
+	        if ($.validate.form()) {
+	            $.operate.save(prefix + "/add", $('#form-install-add').serialize());
+	        }
+	    }
+	</script>
+</body>
+</html>

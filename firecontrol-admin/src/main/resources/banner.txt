@@ -1,0 +1,3 @@
+Application Version: ${firecontrol.version}
+Spring Boot Version: ${spring-boot.version}
+系统正在启动...

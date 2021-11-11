@@ -1,0 +1,3 @@
+firecontrol\web\controller\common\CommonController.class
+firecontrol\web\controller\system\SysUserController.class
+firecontrol\web\controller\system\SysLoginController.class

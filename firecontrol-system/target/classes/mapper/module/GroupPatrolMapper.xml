@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.firecontrol.module.mapper.GroupPatrolMapper">
+    
+    <resultMap type="GroupPatrol" id="GroupPatrolResult">
+        <result property="id"    column="id"    />
+        <result property="groupId"    column="group_id"    />
+        <result property="userId"    column="user_id"    />
+    </resultMap>
+
+    <resultMap type="SysUser" id="SysUserResult">
+        <id     property="userId"       column="user_id"      />
+        <result property="deptId"       column="dept_id"      />
+        <result property="groupId"    column="group_id"    />
+        <result property="loginName"    column="login_name"   />
+        <result property="userName"     column="user_name"    />
+        <result property="email"        column="email"        />
+        <result property="phonenumber"  column="phonenumber"  />
+        <result property="sex"          column="sex"          />
+        <result property="avatar"       column="avatar"       />
+        <result property="loginIp"      column="login_ip"     />
+        <result property="loginDate"    column="login_date"   />
+        <result property="createBy"     column="create_by"    />
+        <result property="createTime"   column="create_time"  />
+        <result property="updateBy"     column="update_by"    />
+        <result property="updateTime"   column="update_time"  />
+        <result property="remark"       column="remark"       />
+    </resultMap>
+	
+	<sql id="selectGroupPatrolVo">
+        select id, group_id, user_id from sys_group_patrol
+    </sql>
+
+    <select id="selectGroupPatrolListByGroupId" parameterType="Integer" resultMap="SysUserResult">
+        select u.user_id, u.dept_id, u.group_id, u.login_name, u.user_name, u.email, u.phonenumber, u.sex, u.avatar, u.login_ip, u.login_date, u.create_by, u.create_time, u.remark from sys_user u
+        right join sys_group_patrol g on g.user_id = u.user_id
+        where    g.group_id = #{groupId} and   u.del_flag='0' and  u.status = '0'
+    </select>
+
+    <select id="queryGroupPatrolListByGroupIds" resultMap="SysUserResult">
+        select u.user_id, u.dept_id, u.group_id, u.login_name, u.user_name, u.email, u.phonenumber, u.sex, u.avatar, u.login_ip, u.login_date, u.create_by, u.create_time, u.remark from sys_user u
+        right join sys_group_patrol g on g.user_id = u.user_id
+        where    g.group_id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+
+        and   u.del_flag='0' and  u.status = '0'
+    </select>
+
+
+    <select id="selectGroupPatrolList" parameterType="GroupPatrol" resultMap="GroupPatrolResult">
+        <include refid="selectGroupPatrolVo"/>
+        <where>  
+            <if test="id != null "> and id = #{id}</if>
+             <if test="groupId != null "> and group_id = #{groupId}</if>
+             <if test="userId != null "> and user_id = #{userId}</if>
+         </where>
+    </select>
+    
+    <select id="selectGroupPatrolById" parameterType="Integer" resultMap="GroupPatrolResult">
+        <include refid="selectGroupPatrolVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectGroupPatrolByGroupId" parameterType="Integer" resultMap="GroupPatrolResult">
+        <include refid="selectGroupPatrolVo"/>
+        where group_id = #{id}
+    </select>
+        
+    <insert id="insertGroupPatrol" parameterType="GroupPatrol" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_group_patrol
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="groupId != null  ">group_id,</if>
+			<if test="userId != null  ">user_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="groupId != null  ">#{groupId},</if>
+			<if test="userId != null  ">#{userId},</if>
+         </trim>
+    </insert>
+	 
+    <update id="updateGroupPatrol" parameterType="GroupPatrol">
+        update sys_group_patrol
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="groupId != null  ">group_id = #{groupId},</if>
+            <if test="userId != null  ">user_id = #{userId},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+	<delete id="deleteGroupPatrolById" parameterType="Integer">
+        delete from sys_group_patrol where id = #{id}
+    </delete>
+
+    <delete id="deleteGroupPatrolByGroupId" parameterType="Integer">
+        delete from sys_group_patrol where group_id = #{groupId}
+    </delete>
+
+    <delete id="deleteGroupPatrolByUserId" parameterType="Long">
+        delete from sys_group_patrol where user_id = #{userId}
+    </delete>
+
+    <delete id="deleteGroupPatrolByIds" parameterType="String">
+        delete from sys_group_patrol where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    
+</mapper>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.firecontrol.module.mapper.AlarmMapper">
+    
+    <resultMap type="Alarm" id="AlarmResult">
+        <result property="id"    column="id"    />
+        <result property="imei"    column="imei"    />
+        <result property="batteryLevel"    column="battery_level"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="rsrp"    column="rsrp"    />
+        <result property="csq"    column="csq"    />
+        <result property="snr"    column="snr"    />
+        <result property="alarmStatus"    column="alarm_status"    />
+        <result property="alarmLeave"    column="alarm_leave"    />
+        <result property="cellIdLength"    column="cell_id_length"    />
+        <result property="cellId"    column="cell_id"    />
+    </resultMap>
+	
+	<sql id="selectAlarmVo">
+        select id, imei, battery_level, update_time,rsrp, csq, snr, alarm_status, alarm_leave, cell_id_length, cell_id from sys_alarm
+    </sql>
+
+    <!-- IMEI查询设备状态信息 -->
+    <select id="queryAlarmByImei" parameterType="String" resultMap="AlarmResult">
+        <include refid="selectAlarmVo"/>
+        WHERE imei = #{imei}
+    </select>
+	
+    <select id="selectAlarmList" parameterType="Alarm" resultMap="AlarmResult">
+        <include refid="selectAlarmVo"/>
+        <where>  
+            <if test="id != null "> and id = #{id}</if>
+             <if test="imei != null  and imei != '' "> and imei = #{imei}</if>
+             <if test="batteryLevel != null "> and battery_level = #{batteryLevel}</if>
+             <if test="updateTime != null "> and update_time = #{updateTime}</if>
+             <if test="rsrp != null "> and rsrp = #{rsrp}</if>
+             <if test="csq != null "> and csq = #{csq}</if>
+             <if test="snr != null "> and snr = #{snr}</if>
+             <if test="alarmStatus != null  and alarmStatus != '' "> and alarm_status = #{alarmStatus}</if>
+             <if test="alarmLeave != null "> and alarm_leave = #{alarmLeave}</if>
+             <if test="cellIdLength != null "> and cell_id_length = #{cellIdLength}</if>
+             <if test="cellId != null "> and cell_id = #{cellId}</if>
+         </where>
+    </select>
+    
+    <select id="selectAlarmById" parameterType="Integer" resultMap="AlarmResult">
+        <include refid="selectAlarmVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertAlarm" parameterType="Alarm">
+        insert into sys_alarm
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null  ">id,</if>
+			<if test="imei != null  and imei != ''  ">imei,</if>
+			<if test="batteryLevel != null  ">battery_level,</if>
+			<if test="updateTime != null  ">update_time,</if>
+			<if test="rsrp != null  ">rsrp,</if>
+			<if test="csq != null  ">csq,</if>
+			<if test="snr != null  ">snr,</if>
+			<if test="alarmStatus != null  and alarmStatus != ''  ">alarm_status,</if>
+			<if test="alarmLeave != null  ">alarm_leave,</if>
+			<if test="cellIdLength != null  ">cell_id_length,</if>
+			<if test="cellId != null  ">cell_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null  ">#{id},</if>
+			<if test="imei != null  and imei != ''  ">#{imei},</if>
+			<if test="batteryLevel != null  ">#{batteryLevel},</if>
+			<if test="updateTime != null  ">#{updateTime},</if>
+			<if test="rsrp != null  ">#{rsrp},</if>
+			<if test="csq != null  ">#{csq},</if>
+			<if test="snr != null  ">#{snr},</if>
+			<if test="alarmStatus != null  and alarmStatus != ''  ">#{alarmStatus},</if>
+			<if test="alarmLeave != null  ">#{alarmLeave},</if>
+			<if test="cellIdLength != null  ">#{cellIdLength},</if>
+			<if test="cellId != null  ">#{cellId},</if>
+         </trim>
+    </insert>
+	 
+    <update id="updateAlarm" parameterType="Alarm">
+        update sys_alarm
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="imei != null  and imei != ''  ">imei = #{imei},</if>
+            <if test="batteryLevel != null  ">battery_level = #{batteryLevel},</if>
+            <if test="updateTime != null  ">update_time = #{updateTime},</if>
+            <if test="rsrp != null  ">rsrp = #{rsrp},</if>
+            <if test="csq != null  ">csq = #{csq},</if>
+            <if test="snr != null  ">snr = #{snr},</if>
+            <if test="alarmStatus != null  and alarmStatus != ''  ">alarm_status = #{alarmStatus},</if>
+            <if test="alarmLeave != null  ">alarm_leave = #{alarmLeave},</if>
+            <if test="cellIdLength != null  ">cell_id_length = #{cellIdLength},</if>
+            <if test="cellId != null  ">cell_id = #{cellId},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+	<delete id="deleteAlarmById" parameterType="Integer">
+        delete from sys_alarm where id = #{id}
+    </delete>
+	
+    <delete id="deleteAlarmByIds" parameterType="String">
+        delete from sys_alarm where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+<!--    统计报警状态-->
+    <select id="statisticsOfEquipmentWarnStatus" resultMap="AlarmResult">
+        select alarm_status , count(*) imei from sys_alarm group by alarm_status
+    </select>
+</mapper>

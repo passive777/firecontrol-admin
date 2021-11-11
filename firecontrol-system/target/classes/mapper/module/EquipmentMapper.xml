@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.firecontrol.module.mapper.EquipmentMapper">
+
+    <resultMap type="Equipment" id="EquipmentResult">
+        <result property="id"    column="id"    />
+        <result property="imei"    column="imei"    />
+        <result property="equipmentName"    column="equipment_name"    />
+        <result property="type"    column="type"    />
+        <result property="communication"    column="communication"    />
+        <result property="manufacturer"    column="manufacturer"    />
+        <result property="imsi"    column="imsi"    />
+        <result property="hardwareVersion"    column="hardware_version"    />
+        <result property="firmwareVersion"    column="firmware_version"    />
+        <result property="deptId"    column="dept_id"    />
+        <result property="status"    column="status"    />
+        <association property="install" column="imei" javaType="Install" resultMap="InstallResult" />
+        <association property="equipmentType"  column="id" javaType="EquipmentType" resultMap="EquipmentTypeResult" />
+        <association property="alarm" column="imei" javaType="Alarm" resultMap="AlarmResult" />
+        <association property="alarmDisposeList" javaType="java.util.List" resultMap="AlarmDisposeResult" />
+        <association property="alarmType" column="id" javaType="AlarmType" resultMap="AlarmTypeResult" />
+        <association property="group" column="group_id" javaType="Group" resultMap="GroupResult" />
+    </resultMap>
+
+    <resultMap type="Install" id="InstallResult">
+        <result property="id"    column="id"    />
+        <result property="groupId"    column="group_id"    />
+        <result property="imei"    column="imei"    />
+        <result property="installName"    column="install_name"    />
+        <result property="installLocation"    column="install_location"    />
+        <result property="installTime"    column="install_time"    />
+        <result property="status"    column="status"    />
+        <result property="userId"    column="user_id"    />
+        <result property="longitude"    column="longitude"    />
+        <result property="latitude"    column="latitude"    />
+    </resultMap>
+
+    <resultMap type="EquipmentType" id="EquipmentTypeResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+    </resultMap>
+
+    <resultMap type="Alarm" id="AlarmResult">
+        <result property="id"    column="id"    />
+        <result property="imei"    column="imei"    />
+        <result property="batteryLevel"    column="battery_level"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="rsrp"    column="rsrp"    />
+        <result property="csq"    column="csq"    />
+        <result property="snr"    column="snr"    />
+        <result property="alarmStatus"    column="alarm_status"    />
+        <result property="alarmLeave"    column="alarm_leave"    />
+        <result property="cellIdLength"    column="cell_id_length"    />
+        <result property="cellId"    column="cell_id"    />
+    </resultMap>
+
+    <resultMap type="AlarmDispose" id="AlarmDisposeResult">
+        <result property="id"    column="id"    />
+        <result property="dispose"    column="dispose"    />
+        <result property="imei"    column="imei"    />
+        <result property="produceTime"    column="produce_time"    />
+        <result property="disposeTime"    column="dispose_time"    />
+        <result property="status"    column="status"    />
+        <result property="batteryLevel"    column="battery_level"    />
+        <result property="alarmLevel"    column="alarm_level"    />
+
+    </resultMap>
+
+    <resultMap type="Group" id="GroupResult">
+        <result property="id" column="id"/>
+        <result property="groupName" column="group_name"/>
+        <result property="longitude" column="longitude"/>
+        <result property="latitude" column="latitude"/>
+        <result property="country" column="country"/>
+        <result property="province" column="province"/>
+        <result property="city" column="city"/>
+        <result property="county" column="county"/>
+        <result property="locationDetail" column="location_detail"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="ancestors" column="ancestors"/>
+    </resultMap>
+
+    <resultMap type="AlarmType" id="AlarmTypeResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+    </resultMap>
+
+
+    <select id="forPlat" parameterType="Group" resultMap="EquipmentResult">
+        select e.id, e.imei, e.equipment_name, e.type, e.status, e.communication, e.manufacturer, e.imsi, e.hardware_version, e.firmware_version, e.dept_id,
+        i.id, i.group_id, i.imei, i.install_name, i.install_location, i.install_time, i.status, i.user_id, i.longitude, i.latitude,
+         al.id, al.imei, al.battery_level, al.update_time, al.rsrp, al.csq, al.snr, al.alarm_status,
+         al.alarm_leave, al.cell_id_length, al.cell_id,
+         sat.id, sat.name
+        from sys_install i
+        left join sys_equipment e on e.imei = i.imei
+		left join sys_alarm al on al.imei = e.imei
+		left join sys_alarm_type sat on al.alarm_status = sat.id
+		left join sys_group g on i.group_id = g.id
+		<where>
+            <if test="deptId != null and deptId != ''">and e.dept_id = #{deptId}</if>
+            <if test="id != null and id != ''">and i.group_id = #{id}</if>
+        </where>
+    </select>
+
+    <sql id="selectEquipmentVo">
+        select e.id, e.imei, e.equipment_name, e.type, e.status, e.communication, e.manufacturer, e.imsi, e.hardware_version, e.firmware_version, e.dept_id,
+        t.id, t.name,
+        i.id, i.group_id, i.imei, i.install_name, i.install_location, i.install_time, i.status, i.user_id, i.longitude, i.latitude,
+         al.id, al.imei, al.battery_level, al.update_time, al.rsrp, al.csq, al.snr, al.alarm_status,
+         al.alarm_leave, al.cell_id_length, al.cell_id
+        from sys_equipment e
+        left join sys_install i on e.imei = i.imei
+		left join sys_equipment_type t on e.type = t.id
+		left join sys_alarm al on al.imei = e.imei
+    </sql>
+
+    <!-- 级联设备表、安装表、监控表、报警类型表、报警处理表 -->
+    <sql id="selectEquipment">
+      select eq.id, eq.imei, eq.equipment_name, eq.type, eq.communication, eq.manufacturer, eq.status, eq.imsi, eq.hardware_version, eq.firmware_version, eq.dept_id,
+       		   ins.id, ins.group_id, ins.imei, ins.install_name, ins.install_location, ins.install_time, ins.status, ins.user_id, ins.longitude, ins.latitude,
+       		   al.id, al.imei, al.battery_level, al.update_time, al.rsrp, al.csq, al.snr, al.alarm_status, al.alarm_leave, al.cell_id_length, al.cell_id,
+       		   alt.id, alt.id, alt.name,
+       		   ald.id, ald.dispose, ald.imei, ald.produce_time, ald.dispose_time, ald.status, ald.battery_level, ald.alarm_level
+		from sys_equipment eq
+			 left join sys_install ins on ins.imei = eq.imei
+			 left join sys_alarm al on al.imei = eq.imei
+			 left join sys_alarm_type alt on alt.id = ( select alarm_status from sys_alarm a where a.imei = eq.imei )
+			 left join sys_alarm_dispose ald on ald.imei = eq.imei
+    </sql>
+
+    <!-- 查询指定IMEI号的设备所有关联信息 -->
+    <select id="selectEquipmentByImei" parameterType="Equipment" resultMap="EquipmentResult">
+        <include refid="selectEquipment" />
+            where eq.imei = #{imei}
+    </select>
+
+
+    <select id="selectEquipmentList" parameterType="Equipment" resultMap="EquipmentResult">
+        <include refid="selectEquipmentVo"/>
+        <where>
+            <if test="id != null "> and id = #{id}</if>
+            <if test="imei != null  and imei != '' "> and e.imei = #{imei}</if>
+            <if test="equipmentName != null  and equipmentName != '' "> and equipment_name = #{equipmentName}</if>
+            <if test="type != null "> and type = #{type}</if>
+            <if test="communication != null  and communication != '' "> and communication = #{communication}</if>
+            <if test="manufacturer != null  and manufacturer != '' "> and manufacturer = #{manufacturer}</if>
+            <if test="imsi != null  and imsi != '' "> and imsi = #{imsi}</if>
+            <if test="hardwareVersion != null  and hardwareVersion != '' "> and hardware_version = #{hardwareVersion}</if>
+            <if test="firmwareVersion != null  and firmwareVersion != '' "> and firmware_version = #{firmwareVersion}</if>
+            <if test="deptId != null "> and dept_id = #{deptId}</if>
+        </where>
+    </select>
+
+    <select id="groupEqumentList"  resultMap="EquipmentResult">
+        <include refid="selectEquipmentVo"/>
+        <where>
+            and i.group_id in (select id from sys_group g where g.parent_id = #{groupId} or g.id = #{groupId})
+        </where>
+    </select>
+
+    <select id="selectEquipmentById" parameterType="Long" resultMap="EquipmentResult">
+        <include refid="selectEquipmentVo"/>
+        where e.id = #{id}
+    </select>
+
+    <insert id="insertEquipment" parameterType="Equipment" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_equipment
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="imei != null  and imei != ''  ">imei,</if>
+            <if test="equipmentName != null  and equipmentName != ''  ">equipment_name,</if>
+            <if test="type != null  ">type,</if>
+            <if test="communication != null  and communication != ''  ">communication,</if>
+            <if test="manufacturer != null  and manufacturer != ''  ">manufacturer,</if>
+            <if test="imsi != null  and imsi != ''  ">imsi,</if>
+            <if test="hardwareVersion != null  and hardwareVersion != ''  ">hardware_version,</if>
+            <if test="firmwareVersion != null  and firmwareVersion != ''  ">firmware_version,</if>
+            <if test="deptId != null  ">dept_id,</if>
+            <if test="status != null  ">status,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="imei != null  and imei != ''  ">#{imei},</if>
+            <if test="equipmentName != null  and equipmentName != ''  ">#{equipmentName},</if>
+            <if test="type != null  ">#{type},</if>
+            <if test="communication != null  and communication != ''  ">#{communication},</if>
+            <if test="manufacturer != null  and manufacturer != ''  ">#{manufacturer},</if>
+            <if test="imsi != null  and imsi != ''  ">#{imsi},</if>
+            <if test="hardwareVersion != null  and hardwareVersion != ''  ">#{hardwareVersion},</if>
+            <if test="firmwareVersion != null  and firmwareVersion != ''  ">#{firmwareVersion},</if>
+            <if test="deptId != null  ">#{deptId},</if>
+            <if test="status != null  ">#{status},</if>
+        </trim>
+    </insert>
+
+    <update id="updateEquipment" parameterType="Equipment">
+        update sys_equipment
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="imei != null  and imei != ''  ">imei = #{imei},</if>
+            <if test="equipmentName != null  and equipmentName != ''  ">equipment_name = #{equipmentName},</if>
+            <if test="type != null  ">type = #{type},</if>
+            <if test="communication != null  and communication != ''  ">communication = #{communication},</if>
+            <if test="manufacturer != null  and manufacturer != ''  ">manufacturer = #{manufacturer},</if>
+            <if test="imsi != null  and imsi != ''  ">imsi = #{imsi},</if>
+            <if test="hardwareVersion != null  and hardwareVersion != ''  ">hardware_version = #{hardwareVersion},</if>
+            <if test="firmwareVersion != null  and firmwareVersion != ''  ">firmware_version = #{firmwareVersion},</if>
+            <if test="deptId != null  ">dept_id = #{deptId},</if>
+            <if test="status != null  ">dept_id = #{status},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="updateEquipmentDeptIdByImei" parameterType="Equipment">
+        update sys_equipment
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="deptId != null  ">dept_id = #{deptId},</if>
+            <if test="status != null  ">dept_id = #{status},</if>
+        </trim>
+        where imei = #{imei}
+    </update>
+
+    <delete id="deleteEquipmentById" parameterType="Long">
+        delete from sys_equipment where id = #{id}
+    </delete>
+
+    <delete id="deleteEquipmentByIds" parameterType="String">
+        delete from sys_equipment where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+<!--    统计厂商设备-->
+    <select id="statisticsOfManufacturerEquipment" resultMap="EquipmentResult">
+        select communication ,COUNT(*) as status from sys_equipment group by communication
+    </select>
+</mapper>

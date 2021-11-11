@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+	<th:block th:include="include :: header('查看设备')" />
+</head>
+<body class="gray-bg">
+<div class="container-div">
+	<div class="row">
+		<div class="col-sm-12 search-collapse">
+			<form class="form-horizontal m-t" id="form-group-add" th:object="${group}">
+				<div class="form-group">
+					<label class="col-sm-3 control-label">当前管辖域名称：</label>
+					<div class="col-sm-8">
+						<input id="groupName" name="groupName" th:field="*{groupName}" class="form-control valid" readonly type="text" aria-required="true" aria-invalid="false">
+					</div>
+				</div>
+			</form>
+		</div>
+
+		<div class="btn-group-sm" id="toolbar" role="group" >
+			<label class="font-bold">管辖负责人</label>
+			<a class="btn btn-success" onclick="groupDuty()">
+				<i class="fa fa-plus"></i> 添加
+			</a>
+		</div>
+
+		<div class="btn-group-sm" id="toolbar1" role="group" >
+			<label class="font-bold">管辖员</label>
+			<a class="btn btn-success" onclick="groupPatrol()">
+				<i class="fa fa-plus"></i> 添加
+			</a>
+		</div>
+
+		<div class="btn-group-sm" id="toolbar2" role="group" >
+			<label class="font-bold">下级管辖域</label>
+			<a class="btn btn-success" onclick="#">
+				<i class="fa fa-plus"></i> 添加
+			</a>
+		</div>
+
+		<div class="example">
+			<div class="col-sm-12 select-table table-striped">
+				<table id="duty-table" data-mobile-responsive="true"></table>
+			</div>
+		</div>
+
+		<div class="example">
+			<div class="col-sm-12 select-table table-striped">
+				<table id="patrol-table" data-mobile-responsive="true"></table>
+			</div>
+		</div>
+
+		<div class="example">
+			<div class="col-sm-12 select-table table-striped">
+				<table id="group-table" data-mobile-responsive="true"></table>
+			</div>
+		</div>
+
+	</div>
+</div>
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+	var prefix = ctx + "module/group";
+	var id = [[${id}]];
+	$(function() {
+		var options = {
+			id: "duty-table",
+			url: "/system/user/dutyListByGroup/" + id,
+			createUrl: prefix + "/add",
+			updateUrl: prefix + "/edit/{id}",
+			removeUrl: prefix + "/remove",
+			sortName: "id",
+			modalName: "管辖域责任人",
+			columns: [{
+				checkbox: true
+			},
+				{
+					field: 'userName',
+					title: '责任人姓名'
+				},
+				{
+					field: 'phonenumber',
+					title: '联系电话',
+					sortable: true
+				},
+				{
+					title: '操作',
+					align: 'center',
+					formatter: function (value, row, index) {
+						var actions = [];
+						actions.push('<a class="btn btn-danger btn-xs" href="javascript:void(0)" onclick="openEditUser(\'' + row.userId + '\')"><i class="fa fa-remove"></i>修改</a> ');
+						actions.push('<a class="btn btn-danger btn-xs" href="javascript:void(0)" onclick="removeDuty(\'' + row.userId + '\')"><i class="fa fa-remove"></i>移除</a> ');
+						return actions.join('');
+					}
+				}]
+		};
+		$.table.init(options);
+
+		var options1 = {
+				id: "patrol-table",
+				url: "/system/user/patrolListByGroup/"+ id,
+				createUrl: prefix + "/add",
+				updateUrl: prefix + "/edit/{id}",
+				removeUrl: prefix + "/remove",
+				toolbar: "toolbar1",
+				sortName: "id",
+				modalName: "报警联系人",
+				columns: [{
+					checkbox: true
+				},
+					{
+						field: 'userName',
+						title: '管辖员姓名'
+					},
+					{
+						field: 'phonenumber',
+						title: '联系电话',
+						sortable: true
+					},
+					{
+						title: '操作',
+						align: 'center',
+						formatter: function(value, row, index) {
+							var actions = [];
+							actions.push('<a class="btn btn-danger btn-xs" href="javascript:void(0)" onclick="openEditUser(\'' + row.userId + '\')"><i class="fa fa-remove"></i>修改</a> ');
+							actions.push('<a class="btn btn-danger btn-xs" href="javascript:void(0)" onclick="removePatrol(\'' + row.userId + '\')"><i class="fa fa-remove"></i>移除</a> ');
+							return actions.join('');
+						}
+					}]
+			};
+			$.table.init(options1);
+		var options2 = {
+			id: "group-table",
+			url: "/module/group/childGroupList/" + id,
+			toolbar: "toolbar2",
+			createUrl: "/module/equipment/add",
+			updateUrl: prefix + "/edit/{id}",
+			removeUrl: prefix + "/remove",
+			sortName: "id",
+			modalName: "下级管辖域",
+			columns: [{
+				checkbox: true
+			},
+				{
+					field: 'groupName',
+					title: '管辖域名称'
+				},
+				{
+					field: 'dutyList',
+					title: '责任人',
+					sortable: true,
+					formatter: function (value, row, index) {
+						var list = eval(value);
+						var names = "";
+						for(var i = 0; i < list.length; i++){
+							names += list[i].userName+"  ";
+						}
+						return names;
+					}
+				},
+				{
+					field: 'patrolList',
+					title: '管辖员',
+					sortable: true,
+					formatter: function (value, row, index) {
+						var list = eval(value);
+						var names = "";
+						for(var i = 0; i < list.length; i++){
+							names += list[i].userName+"  ";
+						}
+						return names;
+					}
+				},
+				{
+					title: '操作',
+					align: 'center',
+					formatter: function(value, row, index) {
+						var actions = [];
+						actions.push('<a class="btn btn-danger btn-xs" href="javascript:void(0)" onclick="removeGroup(\'' + row.id + '\')"><i class="fa fa-remove"></i>删除</a> ');
+						return actions.join('');
+					}
+				}]
+		};
+		$.table.init(options2);
+	});
+
+	// 管辖域-责任人管理
+	function groupDuty(){
+		$.modal.opens("责任人管理", "/module/group/groupDuty/"+id, 1000);
+	}
+
+	// 管辖域-管辖员管理
+	function groupPatrol(){
+		$.modal.opens("管辖员管理", "/module/group/groupPatrol/"+id, 1000);
+	}
+
+	// 打开修改责任人信息
+	function openEditUser(userId){
+		layer.open({
+			type: 2,
+			area: [800 + 'px', 600 + 'px'],
+			fix: false,
+			//不固定
+			maxmin: true,
+			shade: 0.3,
+			title: "修改用户信息",
+			content: "/system/user/editInfo/" + userId,
+			btn: ['确定', '关闭'],
+			// 弹层外区域关闭
+			shadeClose: true,
+			yes: function(index, layero){
+				var iframeWin = layero.find('iframe')[0];
+				iframeWin.contentWindow.submitHandler(index, layero);
+				setTimeout(function(){
+					layer.close(index);
+				}, 1500);
+			},
+			cancel: function(index) {
+				return true;
+			}
+		});
+	}
+
+	//移除责任人
+	function removeDuty(userId){
+		//获取当前选择的责任人id
+		$.ajax({
+			cache : true,
+			type : "POST",
+			url : "/module/group/removeDuty",
+			data : {
+				"userId": userId ,
+				"groupId": id,
+			},
+			async : false,
+			error : function(request) {
+				$.modal.alertError("系统错误");
+			},
+			success : function(data) {
+				$.operate.saveSuccess(data);
+			}
+		});
+	}
+
+	// 移除管辖员
+	function removePatrol(userId){
+		$.ajax({
+			cache : true,
+			type : "POST",
+			url : "/module/group/removePatrol",
+			data : {
+				"userId": userId ,
+				"groupId": id,
+			},
+			async : false,
+			error : function(request) {
+				$.modal.alertError("系统错误");
+			},
+			success : function(data) {
+				$.operate.saveSuccess(data);
+			}
+		});
+	}
+
+	// 删除集群
+	function removeGroup(id){
+		$.ajax({
+			cache : true,
+			type : "POST",
+			url : "/module/group/remove",
+			data : {
+				"groupId": id,
+			},
+			async : false,
+			error : function(request) {
+				$.modal.alertError("系统错误");
+			},
+			success : function(data) {
+				$.operate.saveSuccess(data);
+			}
+		});
+	}
+
+</script>
+</body>
+</html>

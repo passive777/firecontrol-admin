@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/firecontrol.iml" filepath="$PROJECT_DIR$/firecontrol.iml" />
+      <module fileurl="file://$PROJECT_DIR$/firecontrol-admin/firecontrol-admin.iml" filepath="$PROJECT_DIR$/firecontrol-admin/firecontrol-admin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/firecontrol-api/firecontrol-api.iml" filepath="$PROJECT_DIR$/firecontrol-api/firecontrol-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/firecontrol-common/firecontrol-common.iml" filepath="$PROJECT_DIR$/firecontrol-common/firecontrol-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/firecontrol-framework/firecontrol-framework.iml" filepath="$PROJECT_DIR$/firecontrol-framework/firecontrol-framework.iml" />
+      <module fileurl="file://$PROJECT_DIR$/firecontrol-generator/firecontrol-generator.iml" filepath="$PROJECT_DIR$/firecontrol-generator/firecontrol-generator.iml" />
+      <module fileurl="file://$PROJECT_DIR$/firecontrol-quartz/firecontrol-quartz.iml" filepath="$PROJECT_DIR$/firecontrol-quartz/firecontrol-quartz.iml" />
+      <module fileurl="file://$PROJECT_DIR$/firecontrol-system/firecontrol-system.iml" filepath="$PROJECT_DIR$/firecontrol-system/firecontrol-system.iml" />
+    </modules>
+  </component>
+</project>

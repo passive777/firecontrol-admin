@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.firecontrol.module.mapper.GroupLinkmanMapper">
+    
+    <resultMap type="GroupLinkman" id="GroupLinkmanResult">
+        <result property="id"    column="id"    />
+        <result property="groupId"    column="group_id"    />
+        <result property="linkman"    column="linkman"    />
+        <result property="deptId"    column="dept_id"    />
+    </resultMap>
+	
+	<sql id="selectGroupLinkmanVo">
+        select id, group_id, linkman, dept_id from sys_group_linkman
+    </sql>
+	
+    <select id="selectGroupLinkmanList" parameterType="GroupLinkman" resultMap="GroupLinkmanResult">
+        <include refid="selectGroupLinkmanVo"/>
+        <where>
+            <if test="id != null "> and id = #{id}</if>
+             <if test="groupId != null  and groupId != '' "> and group_id = #{groupId}</if>
+             <if test="linkman != null  and linkman != '' "> and linkman = #{linkman}</if>
+             <if test="deptId != null  and deptId != '' "> and dept_id = #{deptId}</if>
+         </where>
+    </select>
+
+    <select id="selectByGroup" parameterType="Integer" resultMap="GroupLinkmanResult">
+        <include refid="selectGroupLinkmanVo"/>
+        where group_id = #{groupId}
+    </select>
+    
+    <select id="selectGroupLinkmanById" parameterType="Integer" resultMap="GroupLinkmanResult">
+        <include refid="selectGroupLinkmanVo"/>
+        where group_id = #{id}
+    </select>
+        
+    <insert id="insertGroupLinkman" parameterType="GroupLinkman" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_group_linkman
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="groupId != null  and groupId != ''  ">group_id,</if>
+			<if test="linkman != null  and linkman != ''  ">linkman,</if>
+			<if test="deptId != null  and deptId != ''  ">dept_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="groupId != null  and groupId != ''  ">#{groupId},</if>
+			<if test="linkman != null  and linkman != ''  ">#{linkman},</if>
+			<if test="deptId != null  and deptId != ''  ">#{deptId},</if>
+         </trim>
+    </insert>
+	 
+    <update id="updateGroupLinkman" parameterType="GroupLinkman">
+        update sys_group_linkman
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="groupId != null  and groupId != ''  ">group_id = #{groupId},</if>
+            <if test="linkman != null  and linkman != ''  ">linkman = #{linkman},</if>
+            <if test="deptId != null  and deptId != ''  ">dept_id = #{deptId},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+	<delete id="deleteGroupLinkmanById" parameterType="Integer">
+        delete from sys_group_linkman where id = #{id}
+    </delete>
+
+    <delete id="deleteGroupLinkmanByGroupId" parameterType="Integer">
+        delete from sys_group_linkman where group_id = #{groupId}
+    </delete>
+	
+    <delete id="deleteGroupLinkmanByIds" parameterType="String">
+        delete from sys_group_linkman where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    
+</mapper>

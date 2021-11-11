@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.firecontrol.module.mapper.FirePlanarGraphMapper">
+    
+    <resultMap type="FirePlanarGraph" id="FirePlanarGraphResult">
+        <result property="fpgId"    column="fpg_id"    />
+        <result property="groupId"    column="group_id"    />
+        <result property="x"    column="x"    />
+        <result property="y"    column="y"    />
+        <result property="equipmentId"    column="equipment_id"    />
+        <result property="warnStatus"    column="warn_status"    />
+    </resultMap>
+	
+	<sql id="selectFirePlanarGraphVo">
+        select fpg_id, group_id, x, y, equipment_id, warn_status from fire_planar_graph
+    </sql>
+	
+    <select id="selectFirePlanarGraphList" parameterType="FirePlanarGraph" resultMap="FirePlanarGraphResult">
+        <include refid="selectFirePlanarGraphVo"/>
+        <where>  
+            <if test="fpgId != null "> and fpg_id = #{fpgId}</if>
+             <if test="groupId != null "> and group_id = #{groupId}</if>
+             <if test="x != null "> and x = #{x}</if>
+             <if test="y != null "> and y = #{y}</if>
+             <if test="equipmentId != null "> and equipment_id = #{equipmentId}</if>
+             <if test="warnStatus != null "> and warn_status = #{warnStatus}</if>
+         </where>
+    </select>
+    
+    <select id="selectFirePlanarGraphById" parameterType="Integer" resultMap="FirePlanarGraphResult">
+        <include refid="selectFirePlanarGraphVo"/>
+        where fpg_id = #{fpgId}
+    </select>
+    <select id="getTaggingByGroupId" parameterType="Integer" resultMap="FirePlanarGraphResult">
+        <include refid="selectFirePlanarGraphVo"/>
+        where group_id = #{groupId}
+    </select>
+
+    <insert id="insertFirePlanarGraph" parameterType="FirePlanarGraph" useGeneratedKeys="true" keyProperty="fpgId">
+        insert into fire_planar_graph
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="groupId != null  ">group_id,</if>
+			<if test="x != null  ">x,</if>
+			<if test="y != null  ">y,</if>
+			<if test="equipmentId != null  ">equipment_id,</if>
+			<if test="warnStatus != null  ">warn_status,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="groupId != null  ">#{groupId},</if>
+			<if test="x != null  ">#{x},</if>
+			<if test="y != null  ">#{y},</if>
+			<if test="equipmentId != null  ">#{equipmentId},</if>
+			<if test="warnStatus != null  ">#{warnStatus},</if>
+         </trim>
+    </insert>
+	 
+    <update id="updateFirePlanarGraph" parameterType="FirePlanarGraph">
+        update fire_planar_graph
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="groupId != null  ">group_id = #{groupId},</if>
+            <if test="x != null  ">x = #{x},</if>
+            <if test="y != null  ">y = #{y},</if>
+            <if test="equipmentId != null  ">equipment_id = #{equipmentId},</if>
+            <if test="warnStatus != null  ">warn_status = #{warnStatus},</if>
+        </trim>
+        where fpg_id = #{fpgId}
+    </update>
+
+	<delete id="deleteFirePlanarGraphById" parameterType="Integer">
+        delete from fire_planar_graph where fpg_id = #{fpgId}
+    </delete>
+	
+    <delete id="deleteFirePlanarGraphByIds" parameterType="String">
+        delete from fire_planar_graph where fpg_id in 
+        <foreach item="fpgId" collection="array" open="(" separator="," close=")">
+            #{fpgId}
+        </foreach>
+    </delete>
+
+
+<!--    通过设备id删除标记id-->
+    <delete id="deleteFirePlanarGraphByEqId" parameterType="Integer">
+        delete from fire_planar_graph where equipment_id = #{equipentId}
+    </delete>
+<!--    通过安装集群删除标记-->
+    <delete id="deleteFirePlanarGraphByGroupId" parameterType="Integer">
+        delete from fire_planar_graph where group_id = #{groupId}
+    </delete>
+</mapper>

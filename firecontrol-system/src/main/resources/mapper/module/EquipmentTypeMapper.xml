@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.firecontrol.module.mapper.EquipmentTypeMapper">
+    
+    <resultMap type="EquipmentType" id="EquipmentTypeResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+    </resultMap>
+	
+	<sql id="selectEquipmentTypeVo">
+        select id, name from sys_equipment_type
+    </sql>
+	
+    <select id="selectEquipmentTypeList" parameterType="EquipmentType" resultMap="EquipmentTypeResult">
+        <include refid="selectEquipmentTypeVo"/>
+        <where>  
+            <if test="id != null "> and id = #{id}</if>
+             <if test="name != null  and name != '' "> and name = #{name}</if>
+         </where>
+    </select>
+    
+    <select id="selectEquipmentTypeById" parameterType="Integer" resultMap="EquipmentTypeResult">
+        <include refid="selectEquipmentTypeVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertEquipmentType" parameterType="EquipmentType" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_equipment_type
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="name != null  and name != ''  ">name,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="name != null  and name != ''  ">#{name},</if>
+         </trim>
+    </insert>
+	 
+    <update id="updateEquipmentType" parameterType="EquipmentType">
+        update sys_equipment_type
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null  and name != ''  ">name = #{name},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+	<delete id="deleteEquipmentTypeById" parameterType="Integer">
+        delete from sys_equipment_type where id = #{id}
+    </delete>
+	
+    <delete id="deleteEquipmentTypeByIds" parameterType="String">
+        delete from sys_equipment_type where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- start 根据适用房部门id按设备类型查询设备 -->
+    <resultMap type="EquipmentType" id="EquipmentTypeAndEquipmentResult">
+        <id property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <collection property="equipments" ofType="com.firecontrol.module.domain.Equipment">
+            <id property="id"    column="eid"    />
+            <result property="imei"    column="imei"    />
+            <result property="equipmentName"    column="equipment_name"    />
+            <result property="communication"    column="communication"    />
+            <result property="manufacturer"    column="manufacturer"    />
+            <result property="imsi"    column="imsi"    />
+            <result property="hardwareVersion"    column="hardware_version"    />
+            <result property="firmwareVersion"    column="firmware_version"    />
+            <result property="status"    column="status"    />
+            <result property="deptId"    column="dept_id"    />
+            <association property="alarm" select="com.firecontrol.module.mapper.AlarmMapper.queryAlarmByImei" column="imei" javaType="com.firecontrol.module.domain.Alarm"/>
+        </collection>
+    </resultMap>
+
+    <select id="queryEquipmentTypeAndEquipmentBydeptId" parameterType="Integer" resultMap="EquipmentTypeAndEquipmentResult">
+        SELECT
+            s_e_t.id,
+            s_e_t.name,
+            s_e.id eid,
+            s_e.imei,
+            s_e.equipment_name,
+            s_e.type,
+            s_e.communication,
+            s_e.manufacturer,
+            s_e.imsi,
+            s_e.hardware_version,
+            s_e.firmware_version,
+            s_e.dept_id,
+            s_e.status
+        FROM
+            sys_equipment_type s_e_t
+            LEFT JOIN sys_equipment s_e
+            ON s_e_t.id = s_e.type
+        WHERE
+            s_e.status = 1 AND
+            s_e.dept_id = #{deptId}
+    </select>
+    <!-- end 根据适用房部门id按设备类型查询设备 -->
+    
+</mapper>

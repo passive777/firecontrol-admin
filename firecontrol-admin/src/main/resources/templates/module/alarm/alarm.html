@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+	<th:block th:include="include :: header('报警列表')" />
+</head>
+<body class="gray-bg">
+     <div class="container-div">
+		<div class="row">
+			<div class="col-sm-12 search-collapse">
+				<form id="formId">
+					<div class="select-list">
+						<ul>
+							<li>
+								IMEI：<input type="text" name="imei"/>
+							</li>
+
+							<li>
+								报警等级：<input type="text" name="rank"/>
+							</li>
+
+							<li>
+								电量百分比0~100：<input type="text" name="batteryLevel"/>
+							</li>
+
+							<li>
+								信号强度：<input type="text" name="signal"/>
+							</li>
+
+							<li>
+								更新时间：<input type="text" name="updateTime"/>
+							</li>
+
+							<li>
+								地址域0x00：<input type="text" name="masgId"/>
+							</li>
+
+							<li>
+								RSRP的绝对值：<input type="text" name="rsrp"/>
+							</li>
+
+							<li>
+								CSQ:0~99：<input type="text" name="csq"/>
+							</li>
+
+							<li>
+								单位DB：<input type="text" name="snr"/>
+							</li>
+
+							<li>
+								报警器状态
+1：报警
+2：静音
+3：保留
+4：低压
+5：故障
+6：保留
+7：正常
+8: 设备收到单次静音指令
+9：设备收到连续静音指令
+10：拆卸报警
+11：拆卸恢复
+14：模拟报警
+其它保留：<input type="text" name="alarmStatus"/>
+							</li>
+
+							<li>
+								离报警点的浓度百分比0~100：<input type="text" name="alarmLeave"/>
+							</li>
+
+							<li>
+								小区基站号长度：<input type="text" name="cellIdLength"/>
+							</li>
+
+							<li>
+								小区基站号：<input type="text" name="cellId"/>
+							</li>
+
+							<li>
+								<a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+								<a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+							</li>
+						</ul>
+					</div>
+				</form>
+			</div>
+			
+	        <div class="btn-group-sm" id="toolbar" role="group">
+				<a class="btn btn-success" onclick="$.operate.add()" shiro:hasPermission="module:alarm:add">
+					<i class="fa fa-plus"></i> 添加
+				</a>
+				<a class="btn btn-primary btn-edit disabled" onclick="$.operate.edit()" shiro:hasPermission="module:alarm:edit">
+					<i class="fa fa-edit"></i> 修改
+				</a>
+				<a class="btn btn-danger btn-del btn-del disabled" onclick="$.operate.removeAll()" shiro:hasPermission="module:alarm:remove">
+					<i class="fa fa-remove"></i> 删除
+				</a>
+				<a class="btn btn-warning" onclick="$.table.exportExcel()" shiro:hasPermission="module:alarm:export">
+						<i class="fa fa-download"></i> 导出
+				 </a>
+			</div>
+			<div class="col-sm-12 select-table table-striped">
+				<table id="bootstrap-table" data-mobile-responsive="true"></table>
+			</div>
+		</div>
+	</div>
+    <div th:include="include :: footer"></div>
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('module:alarm:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('module:alarm:remove')}]];
+        var prefix = ctx + "module/alarm";
+
+        $(function() {
+            var options = {
+                url: prefix + "/list",
+                createUrl: prefix + "/add",
+                updateUrl: prefix + "/edit/{id}",
+                removeUrl: prefix + "/remove",
+				exportUrl: prefix + "/export",
+                modalName: "报警",
+		        showExport: true,
+                columns: [{
+		            checkbox: true
+		        },
+				{
+					field : 'id', 
+					title : '监控序号',
+					visible: false
+				},
+				{
+					field : 'imei', 
+					title : 'IMEI',
+					sortable: true
+				},
+				{
+					field : 'rank', 
+					title : '报警等级',
+					sortable: true
+				},
+				{
+					field : 'batteryLevel', 
+					title : '电量百分比0~100',
+					sortable: true
+				},
+				{
+					field : 'signal', 
+					title : '信号强度',
+					sortable: true
+				},
+				{
+					field : 'updateTime', 
+					title : '更新时间',
+					sortable: true
+				},
+				{
+					field : 'masgId', 
+					title : '地址域0x00',
+					sortable: true
+				},
+				{
+					field : 'rsrp', 
+					title : 'RSRP的绝对值',
+					sortable: true
+				},
+				{
+					field : 'csq', 
+					title : 'CSQ:0~99',
+					sortable: true
+				},
+				{
+					field : 'snr', 
+					title : '单位DB',
+					sortable: true
+				},
+				{
+					field : 'alarmStatus', 
+					title : '报警器状态
+1：报警
+2：静音
+3：保留
+4：低压
+5：故障
+6：保留
+7：正常
+8: 设备收到单次静音指令
+9：设备收到连续静音指令
+10：拆卸报警
+11：拆卸恢复
+14：模拟报警
+其它保留',
+					sortable: true
+				},
+				{
+					field : 'alarmLeave', 
+					title : '离报警点的浓度百分比0~100',
+					sortable: true
+				},
+				{
+					field : 'cellIdLength', 
+					title : '小区基站号长度',
+					sortable: true
+				},
+				{
+					field : 'cellId', 
+					title : '小区基站号',
+					sortable: true
+				},
+		        {
+		            title: '操作',
+		            align: 'center',
+		            formatter: function(value, row, index) {
+		            	var actions = [];
+		            	actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="$.operate.edit(\'' + row.id + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+                        actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.id + '\')"><i class="fa fa-remove"></i>删除</a>');
+						return actions.join('');
+		            }
+		        }]
+            };
+            $.table.init(options);
+        });
+    </script>
+</body>
+</html>

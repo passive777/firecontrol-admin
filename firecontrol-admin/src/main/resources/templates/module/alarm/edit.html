@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+	<th:block th:include="include :: header('修改报警')" />
+</head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-alarm-edit" th:object="${alarm}">
+            <input id="id" name="id" th:field="*{id}"  type="hidden">
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">IMEI：</label>
+				<div class="col-sm-8">
+					<input id="imei" name="imei" th:field="*{imei}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">报警等级：</label>
+				<div class="col-sm-8">
+					<input id="rank" name="rank" th:field="*{rank}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">电量百分比0~100：</label>
+				<div class="col-sm-8">
+					<input id="batteryLevel" name="batteryLevel" th:field="*{batteryLevel}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">信号强度：</label>
+				<div class="col-sm-8">
+					<input id="signal" name="signal" th:field="*{signal}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">更新时间：</label>
+				<div class="col-sm-8">
+					<input id="updateTime" name="updateTime" th:field="*{updateTime}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">地址域0x00：</label>
+				<div class="col-sm-8">
+					<input id="masgId" name="masgId" th:field="*{masgId}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">RSRP的绝对值：</label>
+				<div class="col-sm-8">
+					<input id="rsrp" name="rsrp" th:field="*{rsrp}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">CSQ:0~99：</label>
+				<div class="col-sm-8">
+					<input id="csq" name="csq" th:field="*{csq}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">单位DB：</label>
+				<div class="col-sm-8">
+					<input id="snr" name="snr" th:field="*{snr}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">报警器状态
+1：报警
+2：静音
+3：保留
+4：低压
+5：故障
+6：保留
+7：正常
+8: 设备收到单次静音指令
+9：设备收到连续静音指令
+10：拆卸报警
+11：拆卸恢复
+14：模拟报警
+其它保留：</label>
+				<div class="col-sm-8">
+					<input id="alarmStatus" name="alarmStatus" th:field="*{alarmStatus}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">离报警点的浓度百分比0~100：</label>
+				<div class="col-sm-8">
+					<input id="alarmLeave" name="alarmLeave" th:field="*{alarmLeave}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">小区基站号长度：</label>
+				<div class="col-sm-8">
+					<input id="cellIdLength" name="cellIdLength" th:field="*{cellIdLength}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">小区基站号：</label>
+				<div class="col-sm-8">
+					<input id="cellId" name="cellId" th:field="*{cellId}" class="form-control" type="text">
+				</div>
+			</div>
+		</form>
+    </div>
+    <div th:include="include::footer"></div>
+    <script type="text/javascript">
+		var prefix = ctx + "module/alarm";
+		$("#form-alarm-edit").validate({
+			rules:{
+				xxxx:{
+					required:true,
+				},
+			},
+			focusCleanup: true
+		});
+		
+		function submitHandler() {
+	        if ($.validate.form()) {
+	            $.operate.save(prefix + "/edit", $('#form-alarm-edit').serialize());
+	        }
+	    }
+	</script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+	<th:block th:include="include :: header('设备列表')" />
+</head>
+<body class="gray-bg">
+<div class="container-div">
+	<div align="center"><strong>设备当前状态信息</strong></div>
+	<div class="row">
+		<div class="col-sm-12 search-collapse">
+			<form id="formId" th:object="${equipment}">
+				<div class="select-list">
+					<ul>
+						<li>
+							设备IMEI：
+							<input type="text" name="imei" th:field="*{imei}" class="form-control valid" readonly  />
+						</li>
+
+						<li>
+							设备名称：
+							<input type="text" name="equipmentName" th:field="*{equipmentName}" class="form-control valid" readonly/>
+						</li>
+
+						<li>
+							所属管辖域号：
+							<input type="text" name="installName" th:field="*{install.groupId}" class="form-control valid" readonly/>
+						</li>
+
+						<li>
+							管辖域名称：
+							<input type="text" name="installName" th:field="*{install.installName}" class="form-control valid" readonly/>
+						</li>
+
+						<li>
+							安装位置：
+							<input type="text" name="installLocation" th:field="*{install.installLocation}" class="form-control valid" readonly/>
+						</li>
+
+						<li>
+							安装时间：
+							<input type="text" name="installTime" th:value="*{#dates.format(install.installTime,'yyyy-MM-dd  HH:mm:ss')}" class="form-control valid" readonly/>
+						</li>
+
+						<li>
+							经度：
+							<input type="text" name="longitude" th:field="*{install.longitude}" class="form-control valid" readonly/>
+						</li>
+
+						<li>
+							纬度：
+							<input type="text" name="latitude" th:field="*{install.latitude}" class="form-control valid" readonly/>
+						</li>
+
+						<li>
+							设备状态：
+							<input type="text" name="alarmStatus" th:field="*{alarmType.name}" class="form-control valid" readonly/>
+						</li>
+
+						<li>
+							浓度：
+							<input type="text" name="alarmLeave" th:field="*{alarm.alarmLeave}" class="form-control valid" readonly/>
+						</li>
+
+						<li>
+							电池电量：
+							<input type="text" name="batteryLevel" th:field="*{alarm.batteryLevel}" class="form-control valid" readonly/>
+						</li>
+
+						<li>
+							RSRP绝对值：
+							<input type="text" name="rsrp" th:field="*{alarm.rsrp}" class="form-control valid" readonly/>
+						</li>
+
+						<li>
+							CSQ值：
+							<input type="text" name="csq" th:field="*{alarm.csq}" class="form-control valid" readonly/>
+						</li>
+
+						<li>
+							SNR值：
+							<input type="text" name="snr" th:field="*{alarm.snr}" class="form-control valid" readonly/>
+						</li>
+
+						<li>
+							小区基站号长度：
+							<input type="text" name="cellIdLength" th:field="*{alarm.cellIdLength}" class="form-control valid" readonly/>
+						</li>
+
+						<li>
+							小区基站号：
+							<input type="text" name="cellId" th:field="*{alarm.cellId}" class="form-control valid" readonly/>
+						</li>
+
+						<li>
+							更新时间：
+							<input type="text" name="updateTime" th:value="*{#dates.format(alarm.updateTime,'yyyy-MM-dd  HH:mm:ss')}" class="form-control valid" readonly/>
+						</li>
+
+					</ul>
+				</div>
+			</form>
+		</div>
+
+		<div class="col-sm-12 select-table table-striped">
+			<div align="center"><strong>设备历史报警信息</strong></div>
+			<table id="bootstrap-table" data-mobile-responsive="true"></table>
+		</div>
+
+	</div>
+</div>
+<div th:include="include :: footer"></div>
+<script th:inline="javascript">
+	var imei = [[${imei}]];
+	var prefix = ctx + "module/alarmDispose";
+	$(function() {
+		var options = {
+			url: prefix + "/list/" + imei,
+			createUrl: prefix + "/add",
+			updateUrl: prefix + "/edit/{id}",
+			removeUrl: prefix + "/remove",
+			exportUrl: prefix + "/export",
+			modalName: "设备详情",
+			showExport: true,
+			columns: [{
+				checkbox: true
+			},
+				{
+					field : 'id',
+					title : '序号',
+					visible: false
+				},
+				{
+					field : 'alarmType.name',
+					title : '报警类型',
+					sortable: true
+				},
+				{
+					field : 'batteryLevel',
+					title : '电池电量',
+					sortable: true
+				},
+				{
+					field : 'signal',
+					title : '信号强度',
+					sortable: true
+				},
+				{
+					field : 'alarmLevel',
+					title : '浓度',
+					sortable: true
+				},
+				{
+					field : 'dispose',
+					title : '处理方式',
+					sortable: true
+				},
+				{
+					field : 'produceTime',
+					title : '报警时间',
+					sortable: true
+				},
+				{
+					field : 'disposeTime',
+					title : '处理时间',
+					sortable: true
+				}]
+		};
+		$.table.init(options);
+	});
+</script>
+</body>
+</html>

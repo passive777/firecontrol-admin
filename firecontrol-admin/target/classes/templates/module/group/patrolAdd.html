@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+	<th:block th:include="include :: header('角色列表')" />
+	<th:block th:include="include :: layout-latest-css" />
+	<th:block th:include="include :: ztree-css" />
+</head>
+<body class="gray-bg">
+<div class="container-div">
+	<div class="row">
+
+		<div class="col-sm-12 search-collapse">
+			<form id="role-form" th:align="center">
+				<h4 class="form-header h4">选择管辖员
+				<a class="btn btn-success btn-rounded btn-sm" onclick="openPatrolAdd()"><i class="fa fa-plus"></i>&nbsp;添加管辖员</a></h4>
+				<div class="select-list">
+					<ul>
+						<div class="col-sm-8">
+							<div class="input-group">
+								<input type="hidden" class="form-control" name="userId" id="userId">
+								<input type="text" class="form-control" name="user" id="user">
+								<div class="input-group-btn">
+									<button type="button" class="btn btn-white dropdown-toggle" data-toggle="dropdown">
+										<span class="caret"></span>
+									</button>
+									<ul class="dropdown-menu dropdown-menu-right" role="menu">
+									</ul>
+								</div>
+							</div>
+						</div>
+					</ul>
+				</div>
+			</form>
+		</div>
+		<div class="col-sm-12 search-collapse">
+			<form id="group-form" th:align="center">
+				<h4 class="form-header h4">选择管辖域</h4>
+					<ul>
+						<div class="col-sm-8">
+							<div class="input-group">
+								<input type="hidden" class="form-control" name="groupId" id="groupId">
+								<input type="text" class="form-control" name="group" id="group">
+								<div class="input-group-btn">
+									<button type="button" class="btn btn-white dropdown-toggle" data-toggle="dropdown">
+										<span class="caret"></span>
+									</button>
+									<ul class="dropdown-menu dropdown-menu-right" role="menu">
+									</ul>
+								</div>
+							</div>
+						</div>
+					</ul>
+			</form>
+		</div>
+	</div>
+</div>
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+	var prefix = ctx + "module/group";
+    var editFlag = [[${@permission.hasPermi('system:user:edit')}]];
+
+	var id = [[${id}]];
+
+	$("#group").bsSuggest({
+		url: "/module/group/listByDeptSuggest",
+		effectiveFields: ["groupName", "city", "locationDetail"], //有效显示于列表中的字段，非有效字段都会过滤，默认全部，对自定义getData方法无效
+		effectiveFieldsAlias:{groupName: "集群名称", city: "城市", locationDetail: "详细地址"},
+		idField: "id",		//每组数据的哪个字段作为 data-id，优先级高于 indexId 设置（推荐）
+		keyField: "groupName",		//每组数据的第几个数据，作为input输入框的内容
+		showBtn: false,                  //是否显示下拉按钮
+		allowNoKeyword: true,           //是否允许无关键字时请求数据
+		multiWord: false,               //以分隔符号分割的多关键字支持(开了这个警告色功能可能失效)
+		separator: ",",                 //多关键字支持时的分隔符，默认为半角逗号
+		inputWarnColor: "rgba(255,0,0,.1)", //输入框内容不是下拉列表选择时的警告色
+		showHeader: true , //显示 header
+		showBtn: true ,
+	}).on('onDataRequestSuccess', function (e, result) {
+	}).on('onSetSelectValue', function (e, keyword) {
+		$("#groupId").val(keyword.id);
+	});
+
+	$("#user").bsSuggest({
+		url: "/system/user/patrolList",
+		effectiveFields: ["userName", "phonenumber", "sex"], //有效显示于列表中的字段，非有效字段都会过滤，默认全部，对自定义getData方法无效
+		effectiveFieldsAlias:{userName: "姓名", phonenumber: "电话号码", sex: "性别"},
+		idField: "userId",		//每组数据的哪个字段作为 data-id，优先级高于 indexId 设置（推荐）
+		keyField: "userName",		//每组数据的第几个数据，作为input输入框的内容
+		showBtn: false,                  //是否显示下拉按钮
+		allowNoKeyword: true,           //是否允许无关键字时请求数据
+		multiWord: false,               //以分隔符号分割的多关键字支持(开了这个警告色功能可能失效)
+		separator: ",",                 //多关键字支持时的分隔符，默认为半角逗号
+		inputWarnColor: "rgba(255,0,0,.1)", //输入框内容不是下拉列表选择时的警告色
+		showHeader: true , //显示 header
+		showBtn: true ,
+	}).on('onDataRequestSuccess', function (e, result) {
+	}).on('onSetSelectValue', function (e, keyword) {
+		$("#userId").val(keyword.id);
+	});
+
+	// 保存管辖员
+	function submitHandler(){
+		// 获取当前选择的管辖员id
+		var userId = $("#userId").val();
+		var groupId = $("#groupId").val();
+		console.log(userId)
+		if(userId == '' || groupId == ''){
+			layer.msg("请选择管辖员以及集群信息");
+			return;
+		}
+		$.ajax({
+			cache : true,
+			type : "POST",
+			url : ctx + "module/group/saveGroupPatrol",
+			data : {
+				"userId": userId ,
+				"groupId": groupId,
+			},
+			async : false,
+			error : function(request) {
+				$.modal.alertError("系统错误");
+			},
+			success : function(data) {
+				$.operate.saveSuccess(data);
+			}
+		});
+	}
+
+	// 打开管辖员新增
+	function openPatrolAdd(){
+		layer.open({
+			type: 2,
+			area: [500 + 'px', 600 + 'px'],
+			fix: false,
+			//不固定
+			maxmin: true,
+			shade: 0.3,
+			title: "管辖员新增",
+			content: "/system/user/openPatrol",
+			btn: ['确定', '关闭'],
+			// 弹层外区域关闭
+			shadeClose: true,
+			yes: function(index, layero){
+				var iframeWin = layero.find('iframe')[0];
+				iframeWin.contentWindow.submitHandler(index, layero);
+				setTimeout(function(){
+					layer.close(index);
+				}, 1500);
+			},
+			cancel: function(index) {
+				return true;
+			}
+		});
+	}
+
+</script>
+</body>
+</html>

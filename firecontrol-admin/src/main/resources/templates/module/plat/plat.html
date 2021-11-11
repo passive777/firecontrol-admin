@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+	<th:block th:include="include :: header('地图查看')"/>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+	<style type="text/css">
+		body, html, #allmap {
+			width: 100%;
+			height: 100%;
+			overflow: hidden;
+			margin: 0;
+			font-family: "微软雅黑";
+		}
+	</style>
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=5Em2f8jYvZTx9r2SFXMDxu36ot7gPWkS"></script>
+<!--	<script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=4LH9BMqZh76OciEVNRHiWGNqLGjoyTxZ&s=1"></script>-->
+	<title>地图展示</title>
+</head>
+
+<body class="gray-bg">
+
+
+<div id="all">
+
+	<div id="left">
+		<div class="left_top">
+			<div id="left_top"></div>
+		</div>
+		<div id="left_bottom">
+			<div id="allmap"></div>
+		</div>
+	</div>
+
+
+	<div id="right" class="ibox-content">
+		<h3>设备列表</h3>
+			<div style="overflow: auto;height: 790px;">
+				<ul id='lists' class="sortable-list connectList agile-list"></ul>
+			</div>
+	</div>
+
+</div>
+
+</body>
+</html>
+<th:block th:include="include :: footer"/>
+<script th:inline="javascript">
+	$.ajax({
+		data: {},
+		url: "/module/equipment/forPlat",
+		type: "get",
+		dataType: "text",
+		async: false,
+		success: function (data) {
+			console.info("设备列表数据："+data);
+			var list = JSON.parse(data);
+			let html = '';
+			let sta = '';
+			list && list.forEach(function (item, index, arr) {
+				console.log("/"+item.alarm)
+				// sta = item.alarm.alarmStatus == "10" ? "success-element" : "danger-element";
+				sta = "success-element";
+				html += `
+				<li class="warig-elemet ${sta}">
+					<div class="agile-detail">
+                        <div class="agile-detail">
+                            名称：<span>${item.equipmentName ? item.equipmentName : "未命名设备"}</span>  &nbsp;&nbsp;&nbsp;&nbsp;IMEI:<span>${item.imei}</span>
+                        </div>
+					</div>
+					</li>
+				`;
+			});
+			$("#lists").html(html);
+		},
+		error: function (data) {
+
+		}
+	});
+</script>
+
+<!--@version 2020.02.25-->
+<script type="text/javascript">
+	var map = new BMap.Map("allmap");  // 创建Map实例
+
+	map.enableScrollWheelZoom(true);//允许缩放
+
+	var point = new BMap.Point(116.331398, 39.897445);//初始化默认画面坐标
+
+	map.centerAndZoom(point, 14);//中心默认缩放级别
+
+	var geolocation = new BMap.Geolocation();//初始化定位
+
+	//获取当前定位
+	geolocation.getCurrentPosition(function (r) {
+		if (this.getStatus() == BMAP_STATUS_SUCCESS) {
+			//将地图视野定点转移
+			map.panTo(r.point);
+		} else {
+			alert('获取当前位置失败');
+		}
+	}, {enableHighAccuracy: true})
+
+	//初始化所有即将用于显示的集群坐标点
+	var points = [];
+	var prefix = "group";//用于下面异步请求的url
+	var xlist;//集群经度list集合
+	var ylist;//集群维度list集合
+	var idlist;//集群id list集合
+
+	//异步请求所有集群数据及集群报警器状态+用户信息（用于下面的报警实时通讯建立连接）
+	$.ajax({
+		data: {},
+		url: prefix + "/groupPlatData",
+		type: "post",
+		dataType: "text",
+		async: false,
+		success: function (data) {
+			var list = JSON.parse(data);
+			xlist = list.xList;
+			ylist = list.yList;
+			idlist = list.idList;
+			//坐标转换
+			for (var i = 0; i < xlist.length; i++) {
+				points[i] = new BMap.Point(xlist[i], ylist[i]);
+			}
+		},
+		error: function (data) {
+			alert("服务器异常，集群及报警器信息请求失败");
+		}
+	});
+
+
+	//坐标转换完之后的回调函数
+	translateCallback = function (data) {
+		if (data.status === 0) {
+			for (var i = 0; i < data.points.length; i++) {
+				var marker = new BMap.Marker(data.points[i]);
+				$.ajax({
+					data: {
+						"id": idlist[i]
+					},
+					url: prefix + "/alarmEquipment",
+					type: "post",
+					dataType: "text",
+					async: false,
+					success: function (data) {
+						var list = JSON.parse(data);
+						if (list.length > 0) {
+							marker.setAnimation(BMAP_ANIMATION_BOUNCE); //跳动的动画
+						}
+					},
+					error: function (data) {
+
+					}
+				});
+				map.addOverlay(marker);
+				map.setCenter(data.points[i]);
+				//显示的数据
+				var earchItemDict = data.points[i];
+				//管辖域边编号
+				var groupId = idlist[i];
+				registerEvent(marker, earchItemDict, groupId)
+
+			}
+		}
+
+		//为每个集群红点注册点击事件
+		function registerEvent(el, obj, groupId) {
+			marker.addEventListener('click', function (data) {
+				openInfo(obj, groupId);
+			})
+		}
+	}
+
+	//打开任意集群详情窗口
+	function openInfo(obj, groupId) {
+		//请求右侧所需数据并渲染右侧
+		$.ajax({
+			data: {
+				"id": groupId
+			},
+			url: "/module/equipment/forPlat",
+			type: "get",
+			dataType: "text",
+			async: false,
+			success: function (data) {
+				var list = JSON.parse(data);
+				let html = '';
+				if (list.length > 0) {
+					list && list.forEach(function (item, index, arr) {
+						html += `
+                            <li class="warig-elemet">
+                                <div class="agile-detail">
+                                    <div class="agile-detail">
+                                        名称：<span>${item.equipmentName}</span>  &nbsp;&nbsp;&nbsp;&nbsp;IMEI:<span>${item.imei}</span>
+                                    </div>
+                                    <div class="agile-detail">
+                                         状态：<span>${item.alarmType.name ? item.alarmType.name : "暂无数据"}</span>
+                                    </div>
+                                    <div class="agile-detail">
+                                        电量: <span>${item.alarm.batteryLevel ? item.alarm.batteryLevel : "暂无数据"}</span>
+                                    </div>
+
+                                    <div class="agile-detail">
+                                        所属集群：
+                                        <span>${item.group.groupName ? item.group.groupName : "暂无数据"}</span>
+                                    </div>
+
+                                    <div class="agile-detail">
+                                        更新时间：
+                                        <span>${item.alarm.updateTime ? item.alarm.updateTime : "暂无数据"}</span>
+                                    </div>
+                                </div>
+                            </li>
+				        `;
+					});
+				} else {
+					html = '暂无设备';
+				}
+
+				$("#lists").html(html);
+			},
+			error: function (data) {
+
+			}
+		});
+
+		//请求弹窗所需数据并渲染弹窗
+		var opts = {
+			width: 500,     // 信息窗口宽度
+			height: 300,     // 信息窗口高度
+			title: "管辖域设备信息窗口", // 信息窗口标题
+			enableMessage: true
+		}
+
+		var txt = ''
+		$.ajax({
+			data: {},
+			url: "equipmentType/equipmentTypeData",
+			type: "post",
+			dataType: "text",
+			async: false,
+			success: function (data) {
+				var typeJson = JSON.parse(data);
+				var typeNum = typeJson.length;
+				var onEquipmentNum = 0;
+
+				//该方法用于下面的报警器类型分类
+				function onRturn(onNum, typeOne, typeTwo) {
+					if (onNum == typeNum) {
+						return false;
+					} else {
+						if (typeOne == typeTwo) {
+							return true;
+						} else {
+							return false;
+						}
+					}
+				}
+
+				//烟感数据请求
+				$.ajax({
+					data: {
+						"groupId": groupId
+					},
+					url: prefix + "/alarmPlatData",
+					type: "post",
+					dataType: "text",
+					async: false,
+					success: function (data) {
+						var json = JSON.parse(data);
+						var group = json.group;
+						txt += "管辖域名称：" + group.groupName + '<br/>';
+						txt += "所在地区：" + group.country + group.province + group.city + group.county + group.locationDetail + '<br/>';
+						// txt+='设备信息：<br/>'
+						var equipmentList = group.equipmentList;
+						var alarmList = group.alarmList;
+						for (var j = 0; j < typeNum; j++) {
+							var num = 0;
+							var batteryLow = 0;
+							var batteryFlat = 0;
+							var batteryNormal = 0;
+							var statusNormal = 0;
+							var statusAwait = 0;
+							var statusAlarm = 0;
+							for (var i = 0; i < equipmentList.length; i++) {
+								var equipment = equipmentList[i];
+								if (onRturn(onEquipmentNum, typeJson[j].id, equipment.type)) {
+									num++;
+									var alarm = alarmList[i];
+									// txt+='设备-'+i+1+'：<br/>';
+									// txt+="所在位置："+equipment.installName+equipment.installLocation+'<br/>';
+									//报警器状态划分
+									switch (alarm.alarmStatus) {
+										case "7":
+											statusNormal++;
+											break;
+										case "1":
+											statusAlarm++;
+											break;
+										case "3":
+											statusAwait++;
+											break;
+									}
+									//报警器电量状态划分
+									var batteryLevel = alarm.batteryLevel;
+									if (batteryLevel <= 30) {
+										batteryLow++;
+									} else if (30 < batteryLevel && batteryLevel <= 50) {
+										batteryFlat++;
+									} else {
+										batteryNormal++;
+									}
+								}
+							}
+							//报警器数量及状态和电量统计
+							if (num > 0) {
+								txt += typeJson[j].name + "(" + num + ")" + '<br>';
+								txt += "正常（" + statusNormal + "）  待机（" + statusAwait + "）  报警（" + statusAlarm + "）" + '<br/>';
+								txt += "电量正常（" + batteryNormal + "）  电量偏低（" + batteryFlat + "）  电量过低（" + batteryLow + "）" + '<br/>';
+							}
+						}
+					},
+					error: function (data) {
+						txt += '数据请求失败，请刷新！'
+					}
+				});
+			},
+			error: function (data) {
+				txt += '设备类型请求失败，请刷新！'
+			}
+		});
+
+		//txt += '<a class="tableLink" href="/scan_result/scan_ip_list">查看详情</a>' + '<br/>'
+
+		//创建窗口
+		var infoWindow = new BMap.InfoWindow(txt, opts);
+
+		//指定目标点并将窗口指向目标点
+		var point = new BMap.Point(obj.lng, obj.lat);
+		map.openInfoWindow(infoWindow, point);
+	}
+
+	//设置定时，坐标转换完毕后执行
+	setTimeout(function () {
+		var convertor = new BMap.Convertor();
+		convertor.translate(points, 3, 5, translateCallback)
+	}, 0);
+</script>
+
+<!--@author @version 2019.12.20-->
+<script>
+	var websocket = null;
+
+	var wsUrl = "wss://wan.springbless.xin/websocket_server";
+	//var wsUrl = "ws://127.0.0.1:8788/websocket_server";
+	//var wsUrl = "ws://47.106.180.103:8788/websocket_server";
+
+	createWebSocket(wsUrl);
+
+	//创建websocket连接
+	function createWebSocket(url) {
+		try {
+			/**判断当前浏览器是否支持WebSocket**/
+			if ('WebSocket' in window) {
+				websocket = new WebSocket(url);
+			} else if ('MozWebSocket' in window) {
+				websocket = new MozWebSocket(url);
+			} else {
+				alert('当前浏览器不支持警报实时通讯，请及时更换浏览器！')
+			}
+			initEventHandle(url);
+		} catch (e) {
+			reconnect(url);
+		}
+	}
+
+	//初始化websocket执行事件
+	function initEventHandle(url) {
+		/* 连接发生错误的回调方法 */
+		websocket.onerror = function () {
+			reconnect(url);
+			alert("警报实时通讯连接发生错误,请刷新");
+		};
+		/* 连接成功建立的回调方法 */
+		websocket.onopen = function () {
+			/*heartCheck.reset().start();       //心跳检测重置*/
+
+			console.info("警报实时通讯连接成功");
+		}
+
+		/* 接收到消息的回调方法 */
+		websocket.onmessage = function (event) {    //如果获取到消息，心跳检测重置
+			/*heartCheck.reset().start();      //拿到任何消息都说明当前连接是正常的*/
+			if (event.data != 'ping') {
+				if (event.data.indexOf("{") != -1) {
+					console.info("报警警告：" + event.data);
+					dealMessage(event.data);
+				} else {
+					console.info(event.data);
+				}
+			}
+		}
+		/* 连接关闭的回调方法 */
+		websocket.onclose = function () {
+			/*reconnect(wsUrl);*/
+			console.info("警报实时通讯连接关闭");
+		}
+	}
+
+	/* 监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。 */
+	window.onbeforeunload = function () {
+		closeWebSocket();
+	}
+
+	/* 将消息显示在网页上 */
+	function setMessageInnerHTML(innerHTML, callback) {
+		document.getElementById("left_top").innerHTML = innerHTML;
+
+		callback && callback.call(this);
+	}
+
+	/* 关闭WebSocket连接 */
+	function closeWebSocket() {
+		websocket.close();
+	}
+
+	/* 发送消息 暂不使用*/
+	function send() {
+		var message = 'this is a sample message';
+		websocket.send(message);
+	}
+
+	var alarmList = [];//报警列表，用于轮播
+	var alarmListIdx = [];
+
+	//判断并处理接收到的消息
+	function dealMessage(data){
+		var message = JSON.parse(data).message;
+		if (message == "alarm"){
+			alarm(data)
+		}else  if(message == "relieveAlarm"){
+			relieveAlarm(data);
+		}
+	}
+
+	//定义数组索引
+	Array.prototype.indexOf = function(val) {
+		for (var i = 0; i < this.length; i++) {
+			if (this[i] == val) return i;
+		}
+		return -1;
+	};
+	//定义数组删除
+	Array.prototype.remove = function(val) {
+		var index = this.indexOf(val);
+		if (index > -1) {
+			this.splice(index, 1);
+		}
+	};
+
+	//解除警报广播
+	function relieveAlarm(data) {
+		let equipment = JSON.parse(data).equipment;
+		console.info("解除报警");
+		const index = alarmListIdx.indexOf(equipment.imei);
+		if( index != -1){
+			alarmList.splice(index, 1);
+			alarmListIdx.splice(idlist, 1);
+		}
+		console.info("索引："+alarmList);
+		console.info(index);
+		//alarmList.remove(data);
+		let group = JSON.parse(data).group;
+		let html = '';
+		alarmList && alarmList.forEach(function (item, index, arr) {
+			let json = JSON.parse(item);
+			let group = json.group;
+			let equipment = json.equipment;
+			html += `<p style="line-height: 50px;text-indent: 5em;margin-bottom: 0;">
+                        ${group.country}${group.province}${group.city}${group.county}${group.locationDetail}${equipment.install.installName}${equipment.install.installLocation}发生报警！！!
+                     </p>`;
+		});
+
+		//轮播警报设置
+		setMessageInnerHTML(html + html, play);
+
+		//坐标转换完之后的回调函数，进行画面移动和弹窗打开
+		translateCallback = function (data) {
+			//将地图中心对准报警区域
+			map.panTo(data.points[0]);
+			map.centerAndZoom(data.points[0], 18);//中心默认缩放级别
+
+			//自动开启报警集群窗口
+			openInfo(data.points[0], group.id);
+		}
+
+		//坐标转换并延迟执行后续
+		setTimeout(function () {
+			var convertor = new BMap.Convertor();
+			var pointArr = [];
+			var point = new BMap.Point(equipment.install.longitude, equipment.install.latitude);
+			pointArr.push(point);
+			convertor.translate(pointArr, 3, 5, translateCallback)
+		}, 0);
+	}
+
+
+	//当服务端收到警报后浏览器会调用该方法进行警报点定位并画面移动+打开弹窗+警报轮播
+	function alarm(data) {
+		alarmList.push(data);
+		let equipment = JSON.parse(data).equipment;
+		alarmListIdx.push(equipment.imei);
+		let group = JSON.parse(data).group;
+		let html = '';
+		alarmList && alarmList.forEach(function (item, index, arr) {
+			let json = JSON.parse(item);
+			let group = json.group;
+			let equipment = json.equipment;
+			html += `<p style="line-height: 50px;text-indent: 5em;margin-bottom: 0;color: red;text-align: center;font-size: 20px;">
+                        紧急通知：${group.country}${group.province}${group.city}${group.county}${group.locationDetail}${equipment.install.installName}${equipment.install.installLocation}发生报警！！!
+                     </p>`;
+		});
+
+		//轮播警报设置
+		setMessageInnerHTML(html + html, play);
+
+		//坐标转换完之后的回调函数，进行画面移动和弹窗打开
+		translateCallback = function (data) {
+			//将地图中心对准报警区域
+			map.panTo(data.points[0]);
+			map.centerAndZoom(data.points[0], 18);//中心默认缩放级别
+
+			//自动开启报警集群窗口
+			openInfo(data.points[0], group.id);
+		}
+
+		//坐标转换并延迟执行后续
+		setTimeout(function () {
+			var convertor = new BMap.Convertor();
+			var pointArr = [];
+			var point = new BMap.Point(equipment.install.longitude, equipment.install.latitude);
+			pointArr.push(point);
+			convertor.translate(pointArr, 3, 5, translateCallback)
+		}, 0);
+	}
+
+	//警报轮播执行
+	function play() {
+		let pHeight = 50;
+		//pHeight = pHeight.substr(0,pHeight.length);
+		//let height = $("#left_top").height();
+		let len = $("#left_top p").length / 2;
+		setInterval(function () {
+			let marginTop = $("#left_top").css('marginTop');
+			marginTop = parseInt(marginTop.substr(0, marginTop.length - 2));
+
+			if (-(len * pHeight) >= marginTop) {
+				marginTop = 0;
+			} else {
+				marginTop -= pHeight;
+			}
+
+			$("#left_top").css('marginTop', marginTop + "px");
+		}, 1500);
+	}
+</script>
+<style>
+	#all {
+		width: 100%;
+		height: 100%;
+	}
+
+	#left {
+		position: absolute;
+		background-color: #3aadf0;
+		float: left;
+		width: 80%;
+		height: 100%;
+	}
+
+	#right {
+		position: absolute;
+		background-color: white;
+		float: right;
+		width: 20%;
+		height: 100%;
+		margin-left: 80%; /*设置内边距即可，楼主的问题同理可得*/
+	}
+
+	.left_top {
+		background-color: white;
+		width: 100%;
+		height: 50px;
+		float: left;
+		transition: .5s;
+	}
+
+	#left_top {
+		margin-top: 0px;
+		display: block;
+		width: 100%;
+		height: auto;
+		transition: .5s;
+	}
+
+	#left_top p {
+		display: block;
+		width: 100%;
+		transition: .5s;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	#left_bottom {
+		background-color: black;
+		width: 100%;
+		height: 95%;
+		float: left;
+	}
+
+
+</style>

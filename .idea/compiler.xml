@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="firecontrol-api" />
+        <module name="firecontrol-framework" />
+        <module name="firecontrol-common" />
+        <module name="firecontrol-system" />
+        <module name="firecontrol-quartz" />
+        <module name="firecontrol-admin" />
+        <module name="firecontrol-generator" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="firecontrol" target="1.5" />
+      <module name="firecontrol-admin" target="1.5" />
+      <module name="firecontrol-api" target="1.5" />
+      <module name="firecontrol-common" target="1.5" />
+      <module name="firecontrol-framework" target="1.5" />
+      <module name="firecontrol-generator" target="1.5" />
+      <module name="firecontrol-quartz" target="1.5" />
+      <module name="firecontrol-system" target="1.5" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

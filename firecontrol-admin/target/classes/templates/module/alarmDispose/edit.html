@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+	<th:block th:include="include :: header('修改报警处理')" />
+</head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-alarmDispose-edit" th:object="${alarmDispose}">
+            <input id="id" name="id" th:field="*{id}"  type="hidden">
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">处理方式：</label>
+				<div class="col-sm-8">
+					<input id="dispose" name="dispose" th:field="*{dispose}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">IMEI：</label>
+				<div class="col-sm-8">
+					<input id="imei" name="imei" th:field="*{imei}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">报警时间：</label>
+				<div class="col-sm-8">
+					<input id="produceTime" name="produceTime" th:field="*{produceTime}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">处理时间：</label>
+				<div class="col-sm-8">
+					<input id="disposeTime" name="disposeTime" th:field="*{disposeTime}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">状态（1已处理：0未处理）：</label>
+				<div class="col-sm-8">
+					<input id="status" name="status" th:field="*{status}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">报警等级：</label>
+				<div class="col-sm-8">
+					<input id="rank" name="rank" th:field="*{rank}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">电量百分比0~100：</label>
+				<div class="col-sm-8">
+					<input id="batteryLevel" name="batteryLevel" th:field="*{batteryLevel}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">信号强度：</label>
+				<div class="col-sm-8">
+					<input id="signal" name="signal" th:field="*{signal}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">离报警点的浓度百分比0~100：</label>
+				<div class="col-sm-8">
+					<input id="alarmLevel" name="alarmLevel" th:field="*{alarmLevel}" class="form-control" type="text">
+				</div>
+			</div>
+			<div class="form-group">	
+				<label class="col-sm-3 control-label">报警器状态
+1：报警
+2：静音
+3：保留
+4：低压
+5：故障
+6：保留
+7：正常
+8: 设备收到单次静音指令
+9：设备收到连续静音指令
+10：拆卸报警
+11：拆卸恢复
+14：模拟报警
+其它保留：</label>
+				<div class="col-sm-8">
+					<input id="alarmStatus" name="alarmStatus" th:field="*{alarmStatus}" class="form-control" type="text">
+				</div>
+			</div>
+		</form>
+    </div>
+    <div th:include="include::footer"></div>
+    <script type="text/javascript">
+		var prefix = ctx + "module/alarmDispose";
+		$("#form-alarmDispose-edit").validate({
+			rules:{
+				xxxx:{
+					required:true,
+				},
+			},
+			focusCleanup: true
+		});
+		
+		function submitHandler() {
+	        if ($.validate.form()) {
+	            $.operate.save(prefix + "/edit", $('#form-alarmDispose-edit').serialize());
+	        }
+	    }
+	</script>
+</body>
+</html>

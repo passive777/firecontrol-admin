@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+	<th:block th:include="include :: header('设备报警统计分析')" />
+</head>
+<body class="gray-bg">
+     <div class="container-div">
+		<div class="row">
+			<div class="col-sm-12 select-table table-striped">
+				<div id="main" style="width: 1600px;height:500px;"></div>
+			</div>
+		</div>
+	</div>
+    <div th:include="include :: footer"></div>
+	 <script th:src="@{/ajax/libs/echarts/echarts.js}"></script>
+	 <script th:inline="javascript">
+		var myChart = echarts.init(document.getElementById('main'));
+		// 显示标题，图例和空的坐标轴
+		myChart.setOption({
+			title: {
+				text: '15天内单位设备报警数量'
+			},
+			tooltip: {},
+			legend: {
+				data:['数量']
+			},
+			xAxis: {
+				data: []
+			},
+			yAxis: {},
+			series: [{
+				name: '数量',
+				type: 'bar',
+				data: []
+			}]
+		});
+
+		// 异步加载数据
+		$.get('/module/statistic/statistic').done(function (data) {
+			// 填入数据
+			console.log(eval(data))
+			myChart.setOption({
+				xAxis: {
+					data: data.days
+				},
+				series: [{
+					// 根据名字对应到相应的系列
+					name: '',
+					data: data.counts
+				}]
+			});
+		});
+    </script>
+</body>
+</html>
